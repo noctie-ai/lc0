@@ -79,6 +79,7 @@ output = mod.AddClass(
 output.AddMethod('q').AddRetVal(NumericRetVal('f32'))
 output.AddMethod('d').AddRetVal(NumericRetVal('f32'))
 output.AddMethod('m').AddRetVal(NumericRetVal('f32'))
+output.AddMethod('v').AddRetVal(IntegralTupleRetVal('f32'))
 output.AddMethod('p_raw').AddParameter(IntegralArgv('samples', 'i')).AddRetVal(
     IntegralTupleRetVal('f32')).AddEx(ex)
 output.AddMethod('p_softmax').AddParameter(IntegralArgv(

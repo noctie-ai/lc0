@@ -68,6 +68,11 @@ class RandomNetworkComputation : public NetworkComputation {
     return (int(inputs_[sample] % 200000) - 100000) / 100000.0;
   }
 
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
+
   float GetDVal(int sample) const override {
     if (uniform_mode_) return 0.0f;
     // Maximum D value is 1 - abs(Q) for W, D, L to be in range [0.0, 1.0].

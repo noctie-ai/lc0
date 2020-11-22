@@ -70,6 +70,7 @@ class OpenCLComputation : public NetworkComputation {
         weights_(weights),
         policies_(),
         q_values_(),
+        values_(),
         m_values_(),
         wdl_(wdl),
         moves_left_(moves_left) {
@@ -130,6 +131,8 @@ class OpenCLComputation : public NetworkComputation {
             for (size_t i = 0; i < num_value_channels; i++) {
               wdl[q] +=
                   ptr_weights[i + q * num_value_channels] * ptr_outputs[i];
+                  values_.emplace_back(ptr_outputs[i] * ptr_weights[i] - ptr_outputs[i] * ptr_weights[i + 2 * num_value_channels]);
+
             }
           }
 
@@ -165,6 +168,7 @@ class OpenCLComputation : public NetworkComputation {
   // Returns how many times AddInput() was called.
   int GetBatchSize() const override { return static_cast<int>(planes_.size()); }
 
+
   // Returns Q value of @sample.
   float GetQVal(int sample) const override {
     if (wdl_) {
@@ -174,6 +178,14 @@ class OpenCLComputation : public NetworkComputation {
     } else {
       return q_values_[sample];
     }
+  }
+
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float>::const_iterator first = values_.begin() + sample * 128;
+    std::vector<float>::const_iterator last = values_.begin() + sample * 128 + 128;
+    std::vector<float> myVec(first, last);
+    return myVec;
+
   }
 
   float GetDVal(int sample) const override {
@@ -213,6 +225,7 @@ class OpenCLComputation : public NetworkComputation {
 
   std::vector<std::vector<float>> policies_;
   std::vector<float> q_values_;
+  std::vector<float> values_;
   std::vector<float> m_values_;
 
   std::unique_ptr<OpenCLBuffers> buffers_;

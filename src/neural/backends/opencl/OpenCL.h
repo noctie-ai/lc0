@@ -35,6 +35,8 @@ using net_t = float;
 #include <mutex>
 #include <string>
 #include <vector>
+#include <random>
+#include "cl2.hpp"
 
 #include "opencl.hpp"
 
@@ -138,7 +140,7 @@ class OpenCL_Network {
                    const std::vector<float>& weights,
                    const std::vector<float>& biases,
                    const std::vector<float>& fc_w,
-                   const std::vector<float>& fc_b) {
+                   std::vector<float>& fc_b) {
     size_t layer = get_layer_count();
     push_weights(layer, weights);
     push_weights(layer, biases);
@@ -155,8 +157,8 @@ class OpenCL_Network {
                         unsigned int ip_in, unsigned int ip_out,
                         const std::vector<float>& weights_1,
                         const std::vector<float>& biases_1,
-                        const std::vector<float>& weights_2,
-                        const std::vector<float>& biases_2,
+                        std::vector<float>& weights_2,
+                        std::vector<float>& biases_2,
                         const std::vector<short>& indices) {
     size_t layer = get_layer_count();
     push_weights(layer, weights_1);
@@ -173,10 +175,10 @@ class OpenCL_Network {
 
   void push_value(unsigned int channels, unsigned int outputs,
                   unsigned int ip_in, unsigned int ip_out,
-                  const std::vector<float>& weights,
-                  const std::vector<float>& biases,
-                  const std::vector<float>& fc_w,
-                  const std::vector<float>& fc_b) {
+                  std::vector<float>& weights,
+                  std::vector<float>& biases,
+                  std::vector<float>& fc_w,
+                  std::vector<float>& fc_b) {
     size_t layer = get_layer_count();
     push_weights(layer, weights);
     push_weights(layer, biases);

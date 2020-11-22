@@ -98,6 +98,11 @@ class CheckComputation : public NetworkComputation {
     return static_cast<int>(work_comp_->GetBatchSize());
   }
 
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
+
   float GetQVal(int sample) const override {
     return work_comp_->GetQVal(sample);
   }
