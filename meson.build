@@ -363,7 +363,7 @@ if get_option('build_backends')
     ispc_arch = 'x86-64'
     ispc_extra_args = []
     if get_option('ispc') and ispc.found()
-      ispc_native_only = get_option('ispc_native_only') and not meson.is_cross_build()  
+      ispc_native_only = get_option('ispc_native_only') and not meson.is_cross_build()
       if host_machine.system() == 'windows'
         outputnames = [ '@BASENAME@.obj']
         if not ispc_native_only
@@ -820,3 +820,15 @@ if get_option('python_bindings')
     subdir: 'lczero',
     install: true)
 endif
+py_bindings_generator = find_program('scripts/gen_py_bindings.py')
+
+gen_py_bindings = custom_target('backends', input:[], output:['backends.cc'],
+  command : [py_bindings_generator, '@OUTPUT0@'])
+
+py_files = [ gen_py_bindings ]
+
+cpython = dependency('python3')
+python.extension_module('backends',
+  [py_files + files],
+  include_directories: [includes],
+  dependencies: [cpython] + deps)

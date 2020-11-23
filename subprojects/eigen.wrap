@@ -1,4 +1,5 @@
 [wrap-file]
+
 directory = eigen-3.4.0
 source_url = https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
 source_filename = eigen-3.4.0.tar.bz2
@@ -9,4 +10,3 @@ patch_hash = fae999acdb3ea23eada3becdbde7f7f76755e94ad85fee7775b7ab1cf12e84e3
 
 [provide]
 eigen3 = eigen_dep
-
