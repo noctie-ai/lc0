@@ -79,6 +79,10 @@ class RecordComputation : public NetworkComputation {
   float GetPVal(int sample, int move_id) const override {
     return Capture(inner_->GetPVal(sample, move_id), sample);
   }
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
   float GetMVal(int sample) const override {
     return Capture(inner_->GetMVal(sample), sample);
   }
@@ -147,6 +151,10 @@ class ReplayComputation : public NetworkComputation {
   // Returns P value @move_id of @sample.
   float GetPVal(int sample, int) const override { return Replay(sample); }
   float GetMVal(int sample) const override { return Replay(sample); }
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
   virtual ~ReplayComputation() {}
 
   std::unique_ptr<NetworkComputation> inner_;
