@@ -19,3 +19,5 @@ compile_flags.txt
 .mesonpy*
 subprojects/packagecache/*
 *.so
+*.pgn
+*.pb.gz

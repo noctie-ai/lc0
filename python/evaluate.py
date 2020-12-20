@@ -5,152 +5,132 @@ import numpy as np
 import time
 import random
 import chess
+import chess.pgn
 import os
 
 path = os.path.dirname(os.path.abspath(__file__))
 
 #w = Weights("./384x30-t60-4300.pb.gz")
 w = Weights(path + "/128x10-t60-2-5300.pb.gz")
-print(Backend.available_backends())
 
-start_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -'
-b = Backend(weights=w)
+w1100 = Weights(path + "/1000-1200-scratch-swa-36000.pb.gz")
+w1450 = Weights(path + "/1400-1500-scratch-swa-60000.pb.gz")
+w1750 = Weights(path + "/1700-1800-scratch-swa-60000.pb.gz")
+w2150 = Weights(path + "/2000-2100-scratch-swa-60000.pb.gz")
 
-v_list = []
-q_list = []
-reverse_q_list = []
-reverse_v_list = []
+start_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+back = Backend(weights=w)
+b1100 = Backend(weights=w1100)
+b1450 = Backend(weights=w1450)
+b1750 = Backend(weights=w1750)
+b2150 = Backend(weights=w2150)
 
-top_move_p_list = []
-games = 0
-while games < 1:
-    moves_list = []
-    game_state = GameState(start_fen, moves_list)
-    board = chess.Board()
-    turn = 1
-    move_count = 0
-    while len(game_state.moves()) > 0 and move_count < 100:
-        print("###############")
-        fen = board.fen()
-        #board.turn = not board.turn
-        #reverse_fen = board.fen()
-        reverse_game_state = GameState(fen, [])
-        if  (reverse_game_state.as_string() == game_state.as_string()):
-            print(fen)
-            print(reverse_game_state.as_string())
-            print(reverse_game_state.moves())
-            print(game_state.as_string())
-            print(game_state.moves())
-        else:
-            print(fen)
-            print(reverse_game_state.as_string())
-            print(reverse_game_state.moves())
-            print(game_state.as_string())
-            print(game_state.moves())
-            exit()
-            #exit()
-        #print("#")
-        #input = reverse_game_state.as_input(b)
-        #output, = b.evaluate(input)
-        #reverse_q_list.append(output.q() * turn * -1)
-        #print(fen)
-        #print(reverse_fen)
-        #print("#")
 
-        #if turn < 0 and move_count > 20 and move_count < 30:
-        #reverse_v_list.append([turn * x for x in output.v()])
-        #board.turn = not board.turn
+board = chess.Board()
+fen = board.fen()
+start_fen = fen
 
+pgn = open("game8.pgn")
+game = chess.pgn.read_game(pgn)
+
+names = ["1100", "1450", "1750", "2150", "128x10"]
+board = game.board()
+
+prob1 = {}
+prob1["1100"] = 1.0
+prob1["1450"] = 1.0
+prob1["1750"] = 1.0
+prob1["2150"] = 1.0
+prob1["128x10"] = 1.0
+
+prob2 = {}
+prob2["1100"] = 1.0
+prob2["1450"] = 1.0
+prob2["1750"] = 1.0
+prob2["2150"] = 1.0
+prob2["128x10"] = 1.0
+
+moves = []
+white = True
+
+for idx, move in enumerate(game.mainline_moves()):
+    #print(moves)
+    game_state = GameState(start_fen, moves)
+    #print("Game state:")
+    #print(game_state.as_string())
+    moves.append(move.uci())
+    print("FEN: %s" % (fen))
+    fen = board.fen()
+    print("Player move: %s" % (move))
+    l = {}
+    input = game_state.as_input(b1450)
+    output_1450, = b1450.evaluate(input)
+    output_2150, = b2150.evaluate(input)
+
+    p_softmax_1450 = output_1450.p_softmax(*game_state.policy_indices())
+    p_moves_1450 = list(zip(game_state.moves(), p_softmax_1450))
+    #p_moves_1450.sort(key = lambda tup: tup[1], reverse=True)
+
+    p_softmax_2150 = output_2150.p_softmax(*game_state.policy_indices())
+    p_moves_2150 = list(zip(game_state.moves(), p_softmax_2150))
+    #p_moves_2150.sort(key = lambda tup: tup[1], reverse=True)
+
+    print([*p_softmax_1450])
+    print([*p_softmax_2150])
+    plt.scatter([*p_softmax_1450], [*p_softmax_2150], c='b')
+    plt.plot([0, 1], [0, 1])
+    for i, m in enumerate(game_state.moves()):
+        if m == move.uci():
+            plt.scatter([p_softmax_1450[i]], [p_softmax_2150[i]], c='r')
+    plt.show()
+    '''
+    l["1100"] = 0
+    l["1450"] = 0
+    l["1750"] = 0
+    l["2150"] = 0
+    l["128x10"] = 0
+    l_sum = 0
+
+    for b, name in zip([b1100, b1450, b1750, b2150, back], names):
         input = game_state.as_input(b)
         output, = b.evaluate(input)
-        q_list.append(output.q() * turn)
-        v_list.append([turn * x for x in output.v()])
-        #if turn < 0 and move_count > 20 and move_count < 30:
-        #reverse_v_list.append([turn * x for x in output.v()])
+        draw = output.d()
+        win = ((1.0 - draw) + output.q()) / 2
+        lose = ((1.0 - draw) - output.q()) / 2
+        print("%s eval: %.0f/%.0f/%0.f" % (name, (win * 100.0), (draw * 100.0), (lose * 100.0)))
+        #print("%.0f/%.0f/%0.f" % ((win * 100.0), (draw * 100.0), (lose * 100.0)))
         p_softmax = output.p_softmax(*game_state.policy_indices())
-        moves = list(zip(game_state.moves(), p_softmax))
-        moves.sort(key = lambda tup: tup[1], reverse=True)
-        r = random.random()
-        move_p = 0
-        chosen_move = None
-        for move, p in moves:
-            if r < p:
-                moves_list.append(move)
-                move_p = p
-                chosen_move = move
-                break
-            r -= p
-        #moves_list.append(moves[0][0])
-        top_move_p_list.append(move_p)
-        game_state = GameState(start_fen, moves_list)
-        board_move = chess.Move.from_uci(chosen_move)
-        board.push(board_move)
-        turn = -1 * turn
-        move_count += 1
+        p_moves = list(zip(game_state.moves(), p_softmax))
+        p_moves.sort(key = lambda tup: tup[1], reverse=True)
+        ps = [m[1]*np.log(m[1]+1e-9) for m in p_moves]
+        entropy = sum(ps)
+        #print([m[0] for m in p_moves])
+        set = False
+        for m in p_moves:
+            #print(m[0])
+            #print(move)
+            if m[0] == move.uci():
+                move_entropy = m[1]*np.log(m[1]+1e-9)
+                entropy_share = move_entropy / entropy
+                set = True
+                l[name] = m[1]# * entropy_share
+                l_sum += m[1] / 5.0
+                if white:
+                    prob1[name] *= l[name]
+                else:
+                    prob2[name] *= l[name]
+        if not set:
+            print("VA")
+            print("%s probability of %s: %d%%" % (name, m[0], m[1]*100.0))
+    '''
+    board.push(move)
+    white = not white
 
-    print(game_state.as_string())
-    games += 1
-
-v_list_rev = list(map(list, zip(*v_list)))
-reverse_v_list_rev = list(map(list, zip(*reverse_v_list)))
-#for i in range(0, len(v_list_rev)):
-#    plt.plot(v_list_rev[i], 'r-')
-#    plt.plot(reverse_v_list_rev[i], 'b-')
-for i in range(0, 20):
-    plt.plot(v_list_rev[i])
-#    plt.plot(reverse_v_list_rev[i], 'rx')
-plt.show()
-
-plt.plot(q_list)
-plt.show()
-
-v_list = np.array(v_list).T
-print(v_list.shape)
-
-cov_matrix = np.cov(v_list)
-values, vectors = np.linalg.eig(cov_matrix)
-explained = []
-for i in range(0, len(values)):
-    explained.append(np.abs(values[i] / np.sum(values)))
-
-print(explained)
-#for i in range(0, 128):
-#for i in range(0, 50):#
-#    l = []
-#    for k in range(0, len(v_list[i]) - 1):
-#        l.append((v_list[i][k] + v_list[i][k+1]) / 2)
-
-#    plt.hist(l, bins=40, range=(-1, 1))
-    #plt.show()
-#plt.plot(v_list[0:5])
-plt.show()
-
-
-exit()
-
-inputs = []
-for move in g.moves():
-  g2 = GameState(start_fen, [move])
-  inputs.append(g2.as_input(b))
-
-o2 = b.evaluate(*inputs)
-print(o2[0].v())
-res = list(zip(g.moves(), psoftmax, [r.q() for r in o2]))
-
-
-res.sort(key = lambda tup: tup[1], reverse=True)
-
-for r in res:
-  print(r[0] + ":\t%.1f" % (r[1]*100) + " \t%.1f" % (100*(-1*r[2] / 2 + 0.5)))
-
-
-#  print(o.q())
-#print(o.m())
-#print(o.d())
-#print(list(zip(g.moves(), o.p_softmax(*g.policy_indices()))))
-
-
-#v = np.reshape(o.v(), (16, 8))
-#print(v)
-#plt.imshow(v, cmap='RdBu', vmin=-1, vmax=1)
-#plt.show()
+#for key in prob1.keys():
+#    prob1[key] = -2 * np.log(prob1[key])
+#for key in prob2.keys():
+#    prob2[key] = -2 * np.log(prob2[key])
+print(prob1)
+print(prob2)
+#print(-2*np.log(prob1))
+#print(-2*np.log(prob2))
