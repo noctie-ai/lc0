@@ -167,6 +167,7 @@ files += [
   'src/utils/random.cc',
   'src/utils/string.cc',
   'src/utils/weights_adapter.cc',
+  'src/python/weightscopy.cc'
 ]
 includes += include_directories('src')
 
