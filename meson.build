@@ -231,6 +231,7 @@ files += [
   'src/utils/histogram.cc',
   'src/utils/numa.cc',
   'src/utils/weights_adapter.cc',
+  'src/python/weightscopy.cc'
 ]
 
 files += [
