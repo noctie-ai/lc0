@@ -68,9 +68,8 @@ struct RustEvaluation {
 };
 
 RustBackend* new_backend(const char* str);
-RustEvaluation* evaluate(const RustBackend* t,
-                         const RustEvaluationRequest* requests,
-                         size_t num_requests);
+void evaluate(RustEvaluation* responses, const RustEvaluationRequest* requests,
+              size_t num_requests, const RustBackend* t);
 void delete_backend(RustBackend* t);
 uint16_t move_to_policy_index(RustMove m, bool black);
 
@@ -78,6 +77,9 @@ uint16_t move_to_policy_index(RustMove m, bool black);
 }
 #endif
 
+}  // namespace rust
+
+namespace python {
 class Weights {
  public:
   using InputFormat = pblczero::NetworkFormat::InputFormat;
@@ -297,5 +299,5 @@ class GameState {
   PositionHistory history_;
 };
 
-}  // namespace rust
+}  // namespace python
 }  // namespace lczero
