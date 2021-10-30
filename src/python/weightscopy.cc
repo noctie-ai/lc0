@@ -3,6 +3,8 @@
 namespace lczero {
 namespace rust {
 
+using namespace python;
+
 extern "C" {
 
 std::string uci_from_rustmove(RustMove move) {
@@ -38,9 +40,8 @@ RustBackend* new_backend(const char* str) {
   return (RustBackend*)b;
 }
 
-RustEvaluation* evaluate(const RustBackend* t,
-                         const RustEvaluationRequest* requests,
-                         size_t num_requests) {
+void evaluate(RustEvaluation* responses, const RustEvaluationRequest* requests,
+              size_t num_requests, const RustBackend* t) {
   Backend* b = (Backend*)t;
 
   std::vector<std::unique_ptr<Input>> inputs;
@@ -51,15 +52,13 @@ RustEvaluation* evaluate(const RustBackend* t,
     inputs.push_back(std::move(inp));
   }
   std::vector<std::unique_ptr<Output>> o = b->evaluate(input_pointers);
-  RustEvaluation* response = new RustEvaluation[o.size()];
-  for (size_t i = 0; i < o.size(); ++i) {
-    response[i].q_ = o[i]->q_;
-    response[i].d_ = o[i]->d_;
-    response[i].m_ = o[i]->m_;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    responses[i].q_ = o[i]->q_;
+    responses[i].d_ = o[i]->d_;
+    responses[i].m_ = o[i]->m_;
     std::copy(std::begin(o[i]->p_), std::end(o[i]->p_),
-              std::begin(response[i].p_));
+              std::begin(responses[i].p_));
   }
-  return response;
 }
 
 void delete_backend(RustBackend* t) {
