@@ -86,6 +86,10 @@ class CudaNetworkComputation : public NetworkComputation {
     }
   }
 
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
   float GetDVal(int sample) const override {
     if (wdl_) {
       auto d = inputs_outputs_->op_value_mem_[3 * sample + 1];

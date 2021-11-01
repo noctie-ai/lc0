@@ -108,6 +108,10 @@ class CudnnNetworkComputation : public NetworkComputation {
 
   int GetBatchSize() const override { return batch_size_; }
 
+  std::vector<float> GetValues(int sample) const override {
+    std::vector<float> vec;
+    return vec;
+  }
   float GetQVal(int sample) const override {
     if (wdl_) {
       auto w = inputs_outputs_->op_value_mem_[3 * sample + 0];
