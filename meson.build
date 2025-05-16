@@ -221,6 +221,7 @@ files += [
   'src/utils/histogram.cc',
   'src/utils/numa.cc',
   'src/utils/weights_adapter.cc',
+  'src/rust/weights.cc'
 ]
 includes += include_directories('src')
 
@@ -325,7 +326,7 @@ if get_option('build_backends')
     ispc_arch = 'x86-64'
     ispc_extra_args = []
     if get_option('ispc') and ispc.found()
-      ispc_native_only = get_option('ispc_native_only') and not meson.is_cross_build()  
+      ispc_native_only = get_option('ispc_native_only') and not meson.is_cross_build()
       if host_machine.system() == 'windows'
         outputnames = [ '@BASENAME@.obj']
         if not ispc_native_only
